@@ -77,7 +77,10 @@ const loginSchema: Schema = {
 
 const router = Router();
 
-// register a user up
+// gets user auth status
+router.get('/status', authController.getAuthStatus);
+
+// registers a user 
 router.post(
   '/signup',
   checkSchema(signupSchema, ['body']),

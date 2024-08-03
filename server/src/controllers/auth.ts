@@ -8,6 +8,19 @@ import { IVerifyOptions } from 'passport-local';
 import User from '../models/user';
 import OTP from '../models/OTP';
 
+// (GET) get authentication status of user
+export async function getAuthStatus(req: Request, res: Response) {
+  if (!req.user?.isVerified) {
+    return res.status(401).json({ isAuthenticated: false });
+  }
+
+  res.status(200).json({
+    isAuthenticated: true,
+    username: req.user.username,
+    email: req.user.email,
+  });
+}
+
 // (POST) registers a user
 export async function signup(req: Request, res: Response, next: NextFunction) {
   const { username, email, password } = matchedData(req);
@@ -47,7 +60,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
 
     // send OTP to user's email
     await sendOTPVerificationMail(newUser, otp);
-    
+
     res.sendStatus(201);
   } catch (error) {
     return next(createHttpError(500, 'Internal server error'));
