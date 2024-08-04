@@ -1,6 +1,8 @@
 import './database/mongo';
 import env from './utils/validateEnv';
 import express from 'express';
+import passport from 'passport';
+import session from 'express-session';
 import morgan from 'morgan';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import createHttpError, { isHttpError } from 'http-errors';
@@ -9,12 +11,26 @@ import markdownRouter from './routes/markdown';
 
 const app = express();
 
+// global middlewares
 if (env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// global middlewares
+app.use(
+  session({
+    secret: env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: {
+      httpOnly: true,
+      maxAge: 60 * 60 * 1000, // 1 hour
+    },
+  })
+);
+
 app.use(express.json());
+app.use(passport.session());
 
 // routes middlewares
 app.use('/api/v1/auth', authRouter);
