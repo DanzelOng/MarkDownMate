@@ -52,7 +52,8 @@ const signupSchema: Schema = {
     in: ['body'],
     exists: {
       bail: true,
-      errorMessage: 'Password Confirmation property was not defined in request body',
+      errorMessage:
+        'Password Confirmation property was not defined in request body',
     },
     trim: true,
     notEmpty: {
@@ -75,12 +76,16 @@ const loginSchema: Schema = {
   password: signupSchema.password,
 };
 
+const emailSchema: Schema = {
+  email: signupSchema.email,
+};
+
 const router = Router();
 
 // gets user auth status
 router.get('/status', authController.getAuthStatus);
 
-// registers a user 
+// registers a user
 router.post(
   '/signup',
   checkSchema(signupSchema, ['body']),
@@ -94,6 +99,14 @@ router.post(
   checkSchema(loginSchema, ['body']),
   validateCredentialsMiddleware,
   authController.login
+);
+
+// sends an OTP to the user's email
+router.post(
+  '/generate-email-otp',
+  checkSchema(emailSchema, ['body']),
+  validateCredentialsMiddleware,
+  authController.generateEmailOTP
 );
 
 export default router;

@@ -91,3 +91,46 @@ export function login(req: Request, res: Response, next: NextFunction) {
 
   passport.authenticate('local', callbackFn)(req, res, next);
 }
+
+// (POST) sends OTP to email address
+export async function generateEmailOTP(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { email } = matchedData(req);
+
+  try {
+    const existingUser = await User.findOne(
+      { email },
+      'username email isVerified'
+    ).exec();
+
+    if (!existingUser) {
+      return res.status(400).json({
+        type: 'Bad Request Error',
+        errorMsgs:
+          'We were unable to find a user for this email address. Please sign up instead',
+      });
+    }
+
+    if (existingUser.isVerified) {
+      return res
+        .status(200)
+        .json({ message: 'User is already verified. Please log in instead' });
+    }
+
+    const existingOTP = await OTP.findOne({ email }, 'otp').exec();
+
+    if (!existingOTP) {
+      const { otp } = await OTP.create({ email });
+      await sendOTPVerificationMail(existingUser, otp);
+    } else {
+      await sendOTPVerificationMail(existingUser, existingOTP.otp);
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    return next(createHttpError(500, 'Internal server error'));
+  }
+}
