@@ -80,6 +80,24 @@ const emailSchema: Schema = {
   email: signupSchema.email,
 };
 
+const otpSchema: Schema = {
+  otp: {
+    exists: {
+      bail: true,
+      errorMessage: 'OTP was not defined in path params',
+    },
+    trim: true,
+    notEmpty: {
+      bail: true,
+      errorMessage: 'OTP was not provided in path params',
+    },
+    matches: {
+      options: /^\d{6}$/,
+      errorMessage: 'Invalid OTP format',
+    },
+  },
+};
+
 const router = Router();
 
 // gets user auth status
@@ -107,6 +125,14 @@ router.post(
   checkSchema(emailSchema, ['body']),
   validateCredentialsMiddleware,
   authController.generateEmailOTP
+);
+
+// verifies email address
+router.patch(
+  '/verify-email/:otp',
+  checkSchema(otpSchema, ['params']),
+  validateCredentialsMiddleware,
+  authController.verifyEmail
 );
 
 export default router;

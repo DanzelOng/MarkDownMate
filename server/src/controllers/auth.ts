@@ -134,3 +134,74 @@ export async function generateEmailOTP(
     return next(createHttpError(500, 'Internal server error'));
   }
 }
+
+// (PATCH) verifies email address
+export async function verifyEmail(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { otp } = matchedData(req);
+
+  try {
+    const existingOTP = await OTP.findOne({ otp }, '_id email').exec();
+
+    if (!existingOTP) {
+      return res.status(400).json({
+        type: 'Bad Request Error',
+        errorMsgs: 'Invalid OTP',
+      });
+    }
+
+    const { email } = existingOTP;
+
+    const user = await User.findOne(
+      { email },
+      'userId username email isVerified'
+    ).exec();
+
+    if (!user) {
+      return res.status(401).json({
+        type: 'Unauthorized Error',
+        errorMsgs:
+          'We were unable to find a user for this verification. Please sign up instead',
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(200).json({
+        msg: 'User has already been verified. Please login instead',
+      });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    // delete existing OTP
+    await OTP.findByIdAndDelete({ _id: existingOTP._id });
+
+    if (req.user) {
+      // user is already authenticated, return 200 response
+      return res.sendStatus(200);
+    } else {
+      // create user session upon successful verification for unverified users
+      // to allow frontend authentication
+      req.login(
+        {
+          userId: user.userId,
+          username: user.username,
+          email: user.email,
+          isVerified: user.isVerified,
+        },
+        (err) => {
+          if (err) {
+            return next(createHttpError(500, 'Internal server error'));
+          }
+          res.sendStatus(200);
+        }
+      );
+    }
+  } catch (error) {
+    return next(createHttpError(500, 'Internal server error'));
+  }
+}
