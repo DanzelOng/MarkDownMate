@@ -1,3 +1,6 @@
+import typographyPlugin from '@tailwindcss/typography';
+import scrollbarPlugin from 'tailwind-scrollbar';
+
 export default {
   content: ['./index.html', './src/**/*.tsx'],
   darkMode: 'selector',
@@ -36,5 +39,40 @@ export default {
       },
       transparent: 'transparent',
     },
+    extend: {
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            '--tw-prose-bullets': theme('colors.orange.600'),
+            'ul > li::marker': {
+              color: 'var(--tw-prose-bullets)',
+            },
+            'blockquote p:first-of-type::before': {
+              content: 'none',
+            },
+            'blockquote p:last-of-type::after': {
+              content: 'none',
+            },
+            'blockquote a': {
+              fontWeight: '800',
+            },
+          },
+        },
+        invert: {
+          css: {
+            '--tw-prose-bullets': theme('colors.orange.600'),
+          },
+        },
+      }),
+    },
   },
+  plugins: [
+    typographyPlugin({
+      className: 'preview',
+    }),
+    scrollbarPlugin({
+      nocompatible: true,
+      preferredStrategy: 'pseudoelements',
+    }),
+  ],
 };

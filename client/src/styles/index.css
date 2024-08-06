@@ -3,8 +3,29 @@
 @import 'tailwindcss/utilities';
 
 @layer base {
+  html {
+    overflow: hidden;
+  }
+
+  body {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    background-color: theme('colors.slate[500]');
+  }
+
+  div[id='root'] {
+    height: 100%;
+  }
+
   *:focus,
   *:focus-visible {
     outline: none;
+  }
+}
+
+@layer components {
+  .hasScrollBar {
+    @apply scrollbar scrollbar-track-slate-250 scrollbar-thumb-slate-150 scrollbar-track-rounded-full scrollbar-thumb-rounded-full;
   }
 }
