@@ -30,3 +30,35 @@ export async function login(data: LoginFormProps) {
     await createHTTPError(response);
   }
 }
+
+interface IEmail {
+  email: string;
+}
+
+// (POST) generates email OTP
+export async function generateEmailOTP(data: IEmail) {
+  const response = await fetch('api/v1/auth/verification-link', {
+    method: 'POST',
+    signal: AbortSignal.timeout(8000),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+}
+
+// (PATCH) verifies email address
+export async function verifyEmail(otp: string) {
+  const response = await fetch(`api/v1/auth/verify-email/${otp}`, {
+    method: 'PATCH',
+    signal: AbortSignal.timeout(8000),
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+}
