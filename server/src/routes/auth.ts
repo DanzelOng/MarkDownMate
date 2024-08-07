@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { checkSchema, Schema } from 'express-validator';
 import validateCredentialsMiddleware from '../middlewares/validateCredentials';
+import * as rateLimiters from '../middlewares/rateLimiters';
 import * as authController from '../controllers/auth';
 
 const signupSchema: Schema = {
@@ -122,6 +123,7 @@ router.post(
 // sends an OTP to the user's email
 router.post(
   '/generate-email-otp',
+  rateLimiters.limitGenerateEmailOTPMiddleware,
   checkSchema(emailSchema, ['body']),
   validateCredentialsMiddleware,
   authController.generateEmailOTP
@@ -130,6 +132,7 @@ router.post(
 // verifies email address
 router.patch(
   '/verify-email/:otp',
+  rateLimiters.limitVerifyEmailMiddleware,
   checkSchema(otpSchema, ['params']),
   validateCredentialsMiddleware,
   authController.verifyEmail
