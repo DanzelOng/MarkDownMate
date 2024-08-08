@@ -2,6 +2,7 @@ import './database/mongo';
 import env from './utils/validateEnv';
 import express from 'express';
 import passport from 'passport';
+import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import morgan from 'morgan';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
@@ -24,8 +25,12 @@ app.use(
     rolling: true,
     cookie: {
       httpOnly: true,
-      maxAge: 60 * 60 * 1000, // 1 hour
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000,
+      secure: env.NODE_ENV === 'production' ? true : false,
+      domain: env.NODE_ENV === 'production' ? env.COOKIE_DOMAIN : undefined,
     },
+    store: MongoStore.create({ mongoUrl: env.MONGO_CONNECTION_STRING }),
   })
 );
 
