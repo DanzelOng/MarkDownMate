@@ -139,4 +139,7 @@ router.patch(
   authController.verifyEmail
 );
 
+// logs the user out of session
+router.delete('/logout', authController.logout);
+
 export default router;

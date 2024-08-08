@@ -205,3 +205,13 @@ export async function verifyEmail(
     return next(createHttpError(500, 'Internal server error'));
   }
 }
+
+// (DELETE) logs a user out
+export function logout(req: Request, res: Response, next: NextFunction) {
+  req.logout((err) => {
+    if (err) {
+      return next(createHttpError(500, 'Internal Server Error'));
+    }
+    res.sendStatus(200);
+  });
+}
