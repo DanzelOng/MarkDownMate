@@ -1,8 +1,10 @@
+import { sendOTPVerificationMail } from '../utils/mailer';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { Types } from 'mongoose';
 import User from '../models/user';
+import OTP from '../models/OTP';
 
 // serializes user Id to session
 passport.serializeUser((user, done) => {
@@ -50,6 +52,26 @@ passport.use(
       if (!isValidPassword) {
         return done(null, false, {
           message: 'Invalid credentials or user does not exists',
+        });
+      }
+
+      if (!existingUser.isVerified) {
+        const existingOTP = await OTP.findOne({
+          email: existingUser.email,
+        }).exec();
+
+        if (!existingOTP) {
+          const newOTP = await OTP.create({
+            email: existingUser.email,
+          });
+
+          await sendOTPVerificationMail(existingUser, newOTP.otp);
+        } else {
+          await sendOTPVerificationMail(existingUser, existingOTP.otp);
+        }
+
+        return done(null, false, {
+          message: existingUser.email,
         });
       }
 

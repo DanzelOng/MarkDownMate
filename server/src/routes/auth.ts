@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { checkSchema, Schema } from 'express-validator';
+import '../strategies/localStrategy';
 import validateCredentialsMiddleware from '../middlewares/validateCredentials';
 import * as rateLimiters from '../middlewares/rateLimiters';
 import * as authController from '../controllers/auth';
