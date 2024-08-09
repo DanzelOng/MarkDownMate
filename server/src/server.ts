@@ -7,6 +7,7 @@ import session from 'express-session';
 import morgan from 'morgan';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import createHttpError, { isHttpError } from 'http-errors';
+import requiresAuthMiddleware from './middlewares/requiresAuth';
 import authRouter from './routes/auth';
 import markdownRouter from './routes/markdown';
 
@@ -39,7 +40,7 @@ app.use(passport.session());
 
 // routes middlewares
 app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/markdown', markdownRouter);
+app.use('/api/v1/markdown', requiresAuthMiddleware, markdownRouter);
 
 // catch all unknown endpoints and throws error
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
