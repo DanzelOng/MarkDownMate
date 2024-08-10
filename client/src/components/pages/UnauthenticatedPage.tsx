@@ -40,10 +40,26 @@ const UnauthenticatedPage = ({
               <ErrorIcon />
               Connection Error
             </h3>
-            <p className='font-medium leading-7'>
-              Sorry, there was a problem connecting to the server.<br></br>
-              Please try again.
-            </p>
+            <div className='font-medium space-y-5'>
+              <p className='leading-8 text-pretty'>
+                Our web service is hosted on{' '}
+                <a
+                  className='inline-block hover:bg-slate-350 font-normal rounded-md text-slate-100 bg-slate-500 px-2 mx-0.5 focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-[0.5px] focus-visible:outline-slate-250 transition-all duration-200'
+                  href='https://render.com'
+                  target='_blank'
+                >
+                  render.com
+                </a>{' '}
+                and may take a moment to spin up.
+              </p>
+              <p className='leading-8 text-pretty'>
+                Please be patient while this process completes.
+              </p>
+              <p className='leading-8 text-pretty'>
+                If the issue continues, try refreshing the page to check the
+                server status.
+              </p>
+            </div>
             <button
               onClick={getAuthStatus}
               className='w-full bg-slate-950 p-3 text-base text-slate-50 transition-all duration-200 hover:bg-slate-800 focus-visible:outline focus-visible:outline-4 focus-visible:outline-slate-250'
