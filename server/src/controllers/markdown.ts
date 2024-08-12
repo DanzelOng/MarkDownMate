@@ -4,6 +4,7 @@ import {
   NextFunction,
   Express,
 } from 'express-serve-static-core';
+import { matchedData } from 'express-validator';
 import createHttpError from 'http-errors';
 import Markdown from '../models/markdown';
 
@@ -18,6 +19,44 @@ export async function retrieveDocuments(
   try {
     const documents = await Markdown.find({ userId }, '-userId -__v ').exec();
     res.status(200).json(documents);
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
+  }
+}
+
+// (POST) creates a new document
+export async function createDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { userId } = req.user as Express.User;
+  const { fileName: name } = matchedData(req);
+
+  try {
+    const document = await Markdown.findOne({ userId, fileName: name }).exec();
+
+    if (document) {
+      return res.status(409).json({
+        type: 'Conflict Error',
+        errorMsgs: 'Document name already exists',
+      });
+    }
+
+    const { _id, fileName, content, createdAt, updatedAt } =
+      await Markdown.create({
+        userId,
+        fileName: name,
+        content: '',
+      });
+
+    res.status(201).json({
+      _id,
+      fileName,
+      content,
+      createdAt,
+      updatedAt,
+    });
   } catch (error) {
     return next(createHttpError(500, 'Internal Server Error'));
   }
