@@ -75,6 +75,11 @@ const createSchema: Schema = {
   fileName: documentSchema.fileName,
 };
 
+const renameSchema: Schema = {
+  _id: documentSchema._id,
+  fileName: documentSchema.fileName,
+};
+
 const router = Router();
 
 // retrieves user's documents
@@ -90,5 +95,13 @@ router.post(
 
 // uploads a markdown document
 router.post('/upload', fileUploadMiddleware, markdownController.uploadFile);
+
+// renames markdown document
+router.patch(
+  '/rename',
+  checkSchema(renameSchema, ['body']),
+  validateCredentialsMiddleware,
+  markdownController.renameDocument
+);
 
 export default router;

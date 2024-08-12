@@ -109,3 +109,34 @@ export async function uploadFile(
     return next(createHttpError(500, 'Internal Server Error'));
   }
 }
+
+// (PATCH) renames an existing document
+export async function renameDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { userId } = req.user as Express.User;
+  const { fileName: name, _id: id } = matchedData(req);
+
+  try {
+    const document = await Markdown.findByIdAndUpdate(
+      { userId, _id: id },
+      { fileName: name },
+      { new: true }
+    );
+
+    // 404 resource not found error
+    if (!document) {
+      return res.status(404).json({
+        type: 'Resource Not Found Error',
+        errorMsgs: 'The document does not exists',
+      });
+    }
+
+    const { _id, fileName, content, createdAt, updatedAt } = document;
+    res.status(200).json({ _id, fileName, content, createdAt, updatedAt });
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
+  }
+}
