@@ -140,3 +140,28 @@ export async function renameDocument(
     return next(createHttpError(500, 'Internal Server Error'));
   }
 }
+
+// (DELETE) deletes an existing document
+export async function deleteDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { userId } = req.user as Express.User;
+  const { id } = matchedData(req);
+
+  try {
+    const document = await Markdown.findOneAndDelete({ userId, _id: id });
+
+    if (!document) {
+      return res.status(404).json({
+        type: 'Resource Not Found Error',
+        errorMsgs: 'The document cannot be found',
+      });
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    return next(createHttpError(500, 'Internal server error'));
+  }
+}

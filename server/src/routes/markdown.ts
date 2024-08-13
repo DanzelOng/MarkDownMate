@@ -80,6 +80,19 @@ const renameSchema: Schema = {
   fileName: documentSchema.fileName,
 };
 
+const deleteSchema: Schema = {
+  id: {
+    trim: true,
+    notEmpty: {
+      bail: true,
+      errorMessage: 'id parameter was not provided in URL path params',
+    },
+    isMongoId: {
+      errorMessage: 'Invalid MongoId format',
+    },
+  },
+};
+
 const router = Router();
 
 // retrieves user's documents
@@ -102,6 +115,14 @@ router.patch(
   checkSchema(renameSchema, ['body']),
   validateCredentialsMiddleware,
   markdownController.renameDocument
+);
+
+// deletes a document
+router.delete(
+  '/delete/:id',
+  checkSchema(deleteSchema, ['params']),
+  validateCredentialsMiddleware,
+  markdownController.deleteDocument
 );
 
 export default router;
