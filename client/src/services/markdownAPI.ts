@@ -61,3 +61,14 @@ export async function renameDocument(
 
   return await response.json();
 }
+
+// (DELETE) deletes an existing document
+export async function deleteDocument(id: string) {
+  const response = await fetch(`api/v1/markdown/delete/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+}
