@@ -5,6 +5,8 @@ import Aside from '../ui/Aside';
 import Editor from '../ui/Editor';
 import Header from '../ui/Header';
 import Preview from '../ui/Preview';
+import Modal from '../modal/Modal';
+import { type ModalTypes } from '../modal/ModalContentFactory';
 import MarkdownModel from '../../models/markdown';
 import * as markdownAPI from '../../services/markdownAPI';
 
@@ -18,6 +20,8 @@ const HomePageLoggedIn = ({
   setDarkTheme,
 }: HomePageLoggedInProps) => {
   const isTabletViewport = useMediaQuery({ query: '(min-width: 48em)' });
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<ModalTypes>('create');
   const [showAside, setShowAside] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [documents, setDocuments] = useState<MarkdownModel[]>([]);
@@ -26,6 +30,8 @@ const HomePageLoggedIn = ({
       const id: string | null = localStorage.getItem('currentViewedDocumentId');
       return id ? JSON.parse(id) : '';
     });
+
+  const toggleModal = () => setShowModal((mode) => !mode);
 
   useEffect(() => {
     async function fetchDocuments() {
@@ -73,6 +79,8 @@ const HomePageLoggedIn = ({
         setDarkTheme={setDarkTheme}
         showAside={showAside}
         setShowAside={setShowAside}
+        toggleModal={toggleModal}
+        setModalType={setModalType}
         id={currentViewedDocumentId}
         documents={documents}
         setDocuments={setDocuments}
@@ -84,6 +92,8 @@ const HomePageLoggedIn = ({
         <Header
           showAside={showAside}
           setShowAside={setShowAside}
+          toggleModal={toggleModal}
+          setModalType={setModalType}
           id={currentViewedDocumentId}
           documents={documents}
           setDocuments={setDocuments}
@@ -151,6 +161,16 @@ const HomePageLoggedIn = ({
           )}
         </main>
       </div>
+      <Modal
+        isDarkTheme={isDarkTheme}
+        showModal={showModal}
+        modalType={modalType}
+        toggleModal={toggleModal}
+        id={currentViewedDocumentId}
+        documents={documents}
+        setDocuments={setDocuments}
+        setCurrentDocumentId={setCurrentViewedDocumentId}
+      />
     </>
   );
 };
