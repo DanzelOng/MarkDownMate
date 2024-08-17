@@ -93,10 +93,22 @@ const deleteSchema: Schema = {
   },
 };
 
+const downloadSchema: Schema = {
+  id: deleteSchema.id,
+};
+
 const router = Router();
 
 // retrieves user's documents
 router.get('/retrieve', markdownController.retrieveDocuments);
+
+// downloads a document
+router.get(
+  '/download/:id',
+  checkSchema(downloadSchema, ['params']),
+  validateCredentialsMiddleware,
+  markdownController.downloadDocument
+);
 
 // creates a new document
 router.post(

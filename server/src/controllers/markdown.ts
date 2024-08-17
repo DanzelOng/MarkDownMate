@@ -24,6 +24,34 @@ export async function retrieveDocuments(
   }
 }
 
+// (GET) downloads a document
+export async function downloadDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { id } = matchedData(req);
+
+  try {
+    const document = await Markdown.findById(id).exec();
+
+    if (!document) {
+      return res.status(404).json({
+        type: 'Resource Not Found Error',
+        errorMsgs: 'The document does not exists',
+      });
+    }
+
+    const { content, fileName } = document;
+
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'text/markdown');
+    res.send(content);
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
+  }
+}
+
 // (POST) creates a new document
 export async function createDocument(
   req: Request,
