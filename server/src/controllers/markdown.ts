@@ -141,6 +141,36 @@ export async function renameDocument(
   }
 }
 
+// (PUT) saves an existing document
+export async function saveDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { _id: id, content: fileContent } = matchedData(req);
+
+  try {
+    const document = await Markdown.findByIdAndUpdate(
+      { _id: id },
+      { content: fileContent },
+      { new: true }
+    );
+
+    // 404 resource not found error
+    if (!document) {
+      return res.status(404).json({
+        type: 'Resource Not Found Error',
+        errorMsgs: 'The document cannot be found',
+      });
+    }
+
+    const { _id, fileName, content, createdAt, updatedAt } = document;
+    res.status(200).json({ _id, fileName, content, createdAt, updatedAt });
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
+  }
+}
+
 // (DELETE) deletes an existing document
 export async function deleteDocument(
   req: Request,

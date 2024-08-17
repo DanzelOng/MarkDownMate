@@ -117,6 +117,14 @@ router.patch(
   markdownController.renameDocument
 );
 
+// saves an existing document
+router.put(
+  '/save',
+  checkSchema(documentSchema, ['body']),
+  validateCredentialsMiddleware,
+  markdownController.saveDocument
+);
+
 // deletes a document
 router.delete(
   '/delete/:id',
