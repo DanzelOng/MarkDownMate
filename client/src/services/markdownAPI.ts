@@ -62,6 +62,25 @@ export async function renameDocument(
   return await response.json();
 }
 
+// (PUT) saves existing document contents
+export async function updateDocument(
+  data: MarkdownModel
+): Promise<MarkdownModel> {
+  const response = await fetch('api/v1/markdown/save', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+
+  return await response.json();
+}
+
 // (DELETE) deletes an existing document
 export async function deleteDocument(id: string) {
   const response = await fetch(`api/v1/markdown/delete/${id}`, {
