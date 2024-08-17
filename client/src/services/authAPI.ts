@@ -79,3 +79,14 @@ export async function verifyEmail(otp: string) {
     await createHTTPError(response);
   }
 }
+
+// (DELETE) logs out the user
+export async function logout() {
+  const response = await fetch('api/v1/auth/logout', {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+}
