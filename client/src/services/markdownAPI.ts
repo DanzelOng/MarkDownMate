@@ -15,6 +15,32 @@ export async function retrieveDocuments(): Promise<MarkdownModel[]> {
   return await response.json();
 }
 
+interface DocumentResponse {
+  fileName: string;
+  blob: Blob;
+}
+
+// (GET) downloads a document
+export async function downloadDocument(id: string): Promise<DocumentResponse> {
+  const response = await fetch(`api/v1/markdown/download/${id}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+
+  const contentDispostion = response.headers.get(
+    'Content-Disposition'
+  ) as string;
+
+  const match = contentDispostion.match(/filename="(.+)"/) as RegExpMatchArray;
+
+  const blob = await response.blob();
+
+  return { fileName: match[1], blob };
+}
+
 interface NewDocumentDto {
   fileName: string;
 }
@@ -29,6 +55,20 @@ export async function createDocument(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+
+  return await response.json();
+}
+
+// (POST) uploads a document to the server
+export async function uploadFile(data: FormData): Promise<MarkdownModel> {
+  const response = await fetch('api/v1/markdown/upload', {
+    method: 'POST',
+    body: data,
   });
 
   if (!response.ok) {
