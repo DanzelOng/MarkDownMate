@@ -102,7 +102,6 @@ const otpSchema: Schema = {
 
 const tokenSchema: Schema = {
   token: {
-    in: ['query'],
     exists: true,
     trim: true,
     notEmpty: {
@@ -111,7 +110,6 @@ const tokenSchema: Schema = {
     },
   },
   id: {
-    in: ['query'],
     exists: true,
     trim: true,
     notEmpty: {
@@ -124,6 +122,25 @@ const tokenSchema: Schema = {
   },
 };
 
+const generateResetTokenSchema: Schema = {
+  email: {
+    exists: {
+      bail: true,
+      errorMessage: 'Email property was not defined in request body',
+    },
+    trim: true,
+    notEmpty: {
+      bail: true,
+      errorMessage: 'Email was not provided in request body',
+    },
+    isEmail: {
+      bail: true,
+      errorMessage: 'Invalid email format',
+    },
+    toLowerCase: true,
+  },
+};
+
 const router = Router();
 
 // gets user auth status
@@ -132,9 +149,17 @@ router.get('/status', authController.getAuthStatus);
 // get password reset token status
 router.get(
   '/token-status',
-  checkSchema(tokenSchema),
+  checkSchema(tokenSchema, ['query']),
   validateCredentialsMiddleware,
   authController.getTokenStatus
+);
+
+// generate password reset token
+router.post(
+  '/generate-reset-token',
+  checkSchema(generateResetTokenSchema, ['body']),
+  validateCredentialsMiddleware,
+  authController.generateResetToken
 );
 
 // registers a user

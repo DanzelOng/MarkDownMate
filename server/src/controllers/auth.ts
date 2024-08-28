@@ -1,7 +1,11 @@
-import { sendOTPVerificationMail } from '../utils/mailer';
+import {
+  sendOTPVerificationMail,
+  sendPasswordResetMail,
+} from '../utils/mailer';
 import passport, { AuthenticateCallback } from 'passport';
 import { matchedData } from 'express-validator';
 import createHttpError from 'http-errors';
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { IVerifyOptions } from 'passport-local';
@@ -38,6 +42,55 @@ export async function getTokenStatus(
           errorMsgs:
             'The token has already expired. Please request a new token to reset your password.',
         });
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
+  }
+}
+
+// (POST) generates token for resetting password
+export async function generateResetToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { email } = matchedData(req);
+
+    const existingUser = await User.findOne(
+      { email },
+      'userId username'
+    ).exec();
+
+    if (!existingUser) {
+      return res.status(404).json({
+        type: 'Resource Not Found Error',
+        errorMsgs:
+          'We were unable to find a user for this email address. Please sign up instead',
+      });
+    }
+
+    const existingToken = await ResetToken.findOne(
+      { email },
+      'userId token'
+    ).exec();
+
+    if (!existingToken) {
+      const { userId, token } = await ResetToken.create({
+        userId: existingUser.userId,
+        email,
+        token: crypto.randomBytes(32).toString('hex'),
+      });
+      await sendPasswordResetMail(existingUser.username, userId, email, token);
+    } else {
+      await sendPasswordResetMail(
+        existingUser.username,
+        existingToken.userId,
+        email,
+        existingToken.token
+      );
+    }
+
+    res.sendStatus(200);
   } catch (error) {
     return next(createHttpError(500, 'Internal Server Error'));
   }
