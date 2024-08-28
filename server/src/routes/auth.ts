@@ -100,10 +100,42 @@ const otpSchema: Schema = {
   },
 };
 
+const tokenSchema: Schema = {
+  token: {
+    in: ['query'],
+    exists: true,
+    trim: true,
+    notEmpty: {
+      bail: true,
+      errorMessage: 'Token was not provided in query params',
+    },
+  },
+  id: {
+    in: ['query'],
+    exists: true,
+    trim: true,
+    notEmpty: {
+      bail: true,
+      errorMessage: 'Id was not provided in query params',
+    },
+    isMongoId: {
+      errorMessage: 'Invalid MongoId format',
+    },
+  },
+};
+
 const router = Router();
 
 // gets user auth status
 router.get('/status', authController.getAuthStatus);
+
+// get password reset token status
+router.get(
+  '/token-status',
+  checkSchema(tokenSchema),
+  validateCredentialsMiddleware,
+  authController.getTokenStatus
+);
 
 // registers a user
 router.post(

@@ -7,6 +7,7 @@ import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { IVerifyOptions } from 'passport-local';
 import User from '../models/user';
 import OTP from '../models/OTP';
+import ResetToken from '../models/token';
 
 // (GET) get authentication status of user
 export async function getAuthStatus(req: Request, res: Response) {
@@ -19,6 +20,27 @@ export async function getAuthStatus(req: Request, res: Response) {
     username: req.user.username,
     email: req.user.email,
   });
+}
+
+// (GET) get password reset token status
+export async function getTokenStatus(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { token } = matchedData(req);
+  try {
+    const existingToken = await ResetToken.findOne({ token }).exec();
+    existingToken
+      ? res.sendStatus(200)
+      : res.status(404).json({
+          type: 'Bad Request error',
+          errorMsgs:
+            'The token has already expired. Please request a new token to reset your password.',
+        });
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
+  }
 }
 
 // (POST) registers a user
