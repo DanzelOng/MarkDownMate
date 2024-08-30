@@ -141,6 +141,13 @@ const generateResetTokenSchema: Schema = {
   },
 };
 
+const resetPasswordSchema: Schema = {
+  token: tokenSchema.token,
+  id: tokenSchema.id,
+  password: signupSchema.password,
+  passwordConfirmation: signupSchema.passwordConfirmation,
+};
+
 const router = Router();
 
 // gets user auth status
@@ -160,6 +167,14 @@ router.post(
   checkSchema(generateResetTokenSchema, ['body']),
   validateCredentialsMiddleware,
   authController.generateResetToken
+);
+
+// reset password
+router.patch(
+  '/reset-password',
+  checkSchema(resetPasswordSchema, ['body']),
+  validateCredentialsMiddleware,
+  authController.resetPassword
 );
 
 // registers a user

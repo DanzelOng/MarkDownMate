@@ -96,6 +96,50 @@ export async function generateResetToken(
   }
 }
 
+// (PATCH) resets users password
+export async function resetPassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { token, id, password } = matchedData(req);
+
+  try {
+    const existingUser = await User.findOne({ userId: id }).exec();
+
+    if (!existingUser) {
+      return res.status(401).json({
+        type: 'Unauthorized Error',
+        errorMsgs: 'We could not find a user. Please sign up instead.',
+      });
+    }
+
+    const existingToken = await ResetToken.findOne({ token }).exec();
+
+    if (!existingToken) {
+      return res.status(404).json({
+        type: 'Resource Not Found Error',
+        errorMsgs:
+          'The token has already expired. Please request a new token to reset your password.',
+      });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    existingUser.password = hashedPassword;
+    existingUser.isVerified = true;
+    await existingUser.save();
+
+    // delete existing token
+    await ResetToken.findOneAndDelete({ userId: id });
+
+    res.sendStatus(200);
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
+  }
+}
+
 // (POST) registers a user
 export async function signup(req: Request, res: Response, next: NextFunction) {
   const { username, email, password } = matchedData(req);
