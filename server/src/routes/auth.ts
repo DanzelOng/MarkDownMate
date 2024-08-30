@@ -142,8 +142,8 @@ const generateResetTokenSchema: Schema = {
 };
 
 const resetPasswordSchema: Schema = {
-  token: tokenSchema.token,
-  id: tokenSchema.id,
+  token: { ...tokenSchema.token, in: ['query'] },
+  id: { ...tokenSchema.id, in: ['query'] },
   password: signupSchema.password,
   passwordConfirmation: signupSchema.passwordConfirmation,
 };
@@ -174,7 +174,7 @@ router.post(
 router.patch(
   '/reset-password',
   rateLimiters.limitResetPasswordMiddleware,
-  checkSchema(resetPasswordSchema, ['body']),
+  checkSchema(resetPasswordSchema),
   validateCredentialsMiddleware,
   authController.resetPassword
 );
