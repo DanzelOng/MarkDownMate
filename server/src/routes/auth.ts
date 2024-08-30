@@ -164,6 +164,7 @@ router.get(
 // generate password reset token
 router.post(
   '/generate-reset-token',
+  rateLimiters.limitGenerateResetTokenMiddleware,
   checkSchema(generateResetTokenSchema, ['body']),
   validateCredentialsMiddleware,
   authController.generateResetToken
@@ -172,6 +173,7 @@ router.post(
 // reset password
 router.patch(
   '/reset-password',
+  rateLimiters.limitResetPasswordMiddleware,
   checkSchema(resetPasswordSchema, ['body']),
   validateCredentialsMiddleware,
   authController.resetPassword
