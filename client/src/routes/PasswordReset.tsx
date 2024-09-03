@@ -29,6 +29,7 @@ const PasswordReset = () => {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormProps>();
 
@@ -109,24 +110,22 @@ const PasswordReset = () => {
                     error={!(errors.password === undefined)}
                     register={register}
                     registerName='password'
-                    validationOptions={
-                      {
-                        // required: 'Please enter a new password',
-                        // validate: {
-                        //   detectWhitespaces: (password) =>
-                        //     !/^\s|\s$/.test(password) ||
-                        //     'No leading or trailing whitespaces',
-                        // },
-                        // minLength: {
-                        //   value: 3,
-                        //   message: 'Min length of 3 characters',
-                        // },
-                        // maxLength: {
-                        //   value: 50,
-                        //   message: 'Max length of 50 characters',
-                        // },
-                      }
-                    }
+                    validationOptions={{
+                      required: 'Please enter a new password',
+                      validate: {
+                        detectWhitespaces: (password) =>
+                          !/^\s|\s$/.test(password) ||
+                          'No leading or trailing whitespaces',
+                      },
+                      minLength: {
+                        value: 3,
+                        message: 'Min length of 3 characters',
+                      },
+                      maxLength: {
+                        value: 50,
+                        message: 'Max length of 50 characters',
+                      },
+                    }}
                   />
                   <button
                     type='button'
@@ -151,24 +150,22 @@ const PasswordReset = () => {
                     error={!(errors.passwordConfirmation === undefined)}
                     register={register}
                     registerName='passwordConfirmation'
-                    validationOptions={
-                      {
-                        // required: 'Please enter your password confirmation',
-                        // validate: {
-                        //   detectWhitespaces: (passwordConfirmation) =>
-                        //     !/^\s|\s$/.test(passwordConfirmation) ||
-                        //     'No leading or trailing whitespaces',
-                        //   validatePasswordFields: () => {
-                        //     const { password, passwordConfirmation } =
-                        //       getValues();
-                        //     return (
-                        //       password === passwordConfirmation ||
-                        //       'Passwords do not match'
-                        //     );
-                        //   },
-                        // },
-                      }
-                    }
+                    validationOptions={{
+                      required: 'Please enter your password confirmation',
+                      validate: {
+                        detectWhitespaces: (passwordConfirmation) =>
+                          !/^\s|\s$/.test(passwordConfirmation) ||
+                          'No leading or trailing whitespaces',
+                        validatePasswordFields: () => {
+                          const { password, passwordConfirmation } =
+                            getValues();
+                          return (
+                            password === passwordConfirmation ||
+                            'Passwords do not match'
+                          );
+                        },
+                      },
+                    }}
                   />
                   <LockIcon className='absolute right-0 top-[50%] mr-4 translate-y-[-50%]' />
                 </div>
