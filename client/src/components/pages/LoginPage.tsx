@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -6,6 +6,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import InputField from '../ui/InputField';
 import ErrorMsg from '../ui/ErrorMsg';
+import PasswordResetPage from './PasswordResetPage';
 import { BadRequestError, UnauthorizedError } from '../../utils/httpErrors';
 import * as authAPI from '../../services/authAPI';
 
@@ -21,15 +22,20 @@ export interface LoginFormProps {
 
 const LoginPage = ({ setEmail, setVerifyPage }: LoginPageProps) => {
   const [loginError, setLoginError] = useState<string>('');
+  const [passwordResetPage, setPasswordResetPage] = useState(false);
   const {
     register,
     handleSubmit,
     reset,
     setError,
+    getValues,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormProps>();
 
   const navigate = useNavigate();
+
+  const togglePasswordResetPage = () => setPasswordResetPage((state) => !state);
 
   const onSubmit: SubmitHandler<LoginFormProps> = async (data) => {
     try {
@@ -64,7 +70,32 @@ const LoginPage = ({ setEmail, setVerifyPage }: LoginPageProps) => {
     }
   };
 
-  return (
+  const hasErrors = !!Object.keys(errors).length;
+
+  useEffect(() => {
+    if (passwordResetPage) {
+      if (getValues('username') || getValues('password')) {
+        reset();
+      } else if (hasErrors) {
+        clearErrors();
+      }
+      if (loginError) {
+        setLoginError('');
+      }
+    }
+  }, [
+    passwordResetPage,
+    getValues,
+    reset,
+    clearErrors,
+    hasErrors,
+    loginError,
+    setLoginError,
+  ]);
+
+  return passwordResetPage ? (
+    <PasswordResetPage togglePasswordPage={togglePasswordResetPage} />
+  ) : (
     <form
       onSubmit={handleSubmit(onSubmit)}
       autoComplete='off'
