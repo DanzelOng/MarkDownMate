@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { checkSchema, Schema } from 'express-validator';
 import fileUploadMiddleware from '../middlewares/fileUpload';
 import validateCredentialsMiddleware from '../middlewares/validateCredentials';
+import * as rateLimiters from '../middlewares/rateLimiters';
 import * as markdownController from '../controllers/markdown';
 
 const documentSchema: Schema = {
@@ -132,6 +133,7 @@ router.patch(
 // saves an existing document
 router.put(
   '/save',
+  rateLimiters.limitSaveDocumentMiddleware,
   checkSchema(documentSchema, ['body']),
   validateCredentialsMiddleware,
   markdownController.saveDocument
