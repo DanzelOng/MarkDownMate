@@ -163,13 +163,22 @@ const LoginPage = ({ setEmail, setVerifyPage }: LoginPageProps) => {
           </div>
         </div>
       </div>
-      <button
-        disabled={isSubmitting}
-        type='submit'
-        className='bg-slate-950 p-3 text-base text-slate-50 transition-all duration-200 hover:bg-slate-800 focus-visible:outline focus-visible:outline-4 focus-visible:outline-slate-250 disabled:cursor-not-allowed disabled:bg-slate-300'
-      >
-        Log In
-      </button>
+      <div className='flex flex-col gap-y-4'>
+        <button
+          disabled={isSubmitting}
+          type='submit'
+          className='w-full bg-slate-950 p-3 text-base text-slate-50 transition-all duration-200 hover:bg-slate-800 focus-visible:outline focus-visible:outline-4 focus-visible:outline-slate-250 disabled:cursor-not-allowed disabled:bg-slate-300'
+        >
+          Log In
+        </button>
+        <button
+          type='button'
+          onClick={togglePasswordResetPage}
+          className='self-center text-[0.9375rem] font-medium underline decoration-1 transition-all duration-200 hover:text-slate-300 hover:decoration-slate-450 focus-visible:no-underline focus-visible:outline focus-visible:outline-4 focus-visible:outline-slate-250'
+        >
+          Forgot your password?
+        </button>
+      </div>
       <div className='flex flex-col items-center gap-y-2.5'>
         <p className='space-x-1.5 text-pretty text-center font-medium text-slate-450'>
           <span>Don't have an account?</span>
