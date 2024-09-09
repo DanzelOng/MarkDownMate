@@ -216,6 +216,7 @@ router.patch(
 // update user credentials
 router.post(
   '/update-credentials',
+  rateLimiters.limitUpdateCredentialsMiddleware,
   authController.updateCredentials
 );
 

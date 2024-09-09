@@ -59,3 +59,15 @@ export const limitSaveDocumentMiddleware = rateLimit({
       'You have sent out to many requests to save the documents. Please try again after 10 minutes.',
   },
 });
+
+export const limitUpdateCredentialsMiddleware = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 mins
+  limit: 10, // 10 requests
+  legacyHeaders: true,
+  statusCode: 429,
+  message: {
+    type: 'Exceed Requests Error',
+    errorMsgs:
+      'You have sent out to many requests to update your credentials. Please try again after 15 minutes.',
+  },
+});
