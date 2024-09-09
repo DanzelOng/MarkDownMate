@@ -140,6 +140,28 @@ export async function verifyEmail(otp: string) {
   }
 }
 
+interface IUpdateCredentials {
+  username?: string;
+  passwordConfirmation?: string;
+  newPassword?: string;
+}
+
+// (POST) updates user's credentials
+export async function updateCredentials(data: IUpdateCredentials) {
+  const response = await fetch('api/v1/auth/update-credentials', {
+    method: 'POST',
+    signal: AbortSignal.timeout(8000),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await createHTTPError(response);
+  }
+}
+
 // (DELETE) logs out the user
 export async function logout() {
   const response = await fetch('api/v1/auth/logout', {
