@@ -4,11 +4,13 @@ import {
 } from '../utils/mailer';
 import passport, { AuthenticateCallback } from 'passport';
 import { matchedData } from 'express-validator';
+import validator from 'validator';
 import createHttpError from 'http-errors';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { IVerifyOptions } from 'passport-local';
+import { UserCredentialsDto } from '../dto/Dto';
 import User from '../models/user';
 import OTP from '../models/OTP';
 import ResetToken from '../models/token';
@@ -322,6 +324,102 @@ export async function verifyEmail(
     }
   } catch (error) {
     return next(createHttpError(500, 'Internal server error'));
+  }
+}
+
+// (POST) updates user's credentials
+export async function updateCredentials(
+  req: Request<unknown, unknown, UserCredentialsDto, unknown>,
+  res: Response,
+  next: NextFunction
+) {
+  if (!req.user) {
+    return res.status(401).json({
+      type: 'Unauthorized Error',
+      errorMsgs: 'Unauthorized access to endpoint',
+    });
+  }
+
+  try {
+    const { userId } = req.user;
+
+    const existingUser = await User.findOne(
+      { userId },
+      'username email password'
+    ).exec();
+
+    if (!existingUser) {
+      return res.status(401).json({
+        type: 'Unauthorized Error',
+        errorMsgs: 'We were unable to find a user',
+      });
+    }
+
+    let { username, passwordConfirmation, newPassword } = req.body;
+
+    // trim all fields before processing
+    username = username ? validator.trim(username) : '';
+    passwordConfirmation = passwordConfirmation
+      ? validator.trim(passwordConfirmation)
+      : '';
+    newPassword = newPassword ? validator.trim(newPassword) : '';
+
+    // throw bad request if all fields are empty
+    if (!username && !passwordConfirmation && !newPassword) {
+      return res.status(400).json({
+        type: 'Bad Request Error',
+        errorMsgs: 'No data was provided',
+      });
+    }
+
+    // updates the username
+    if (username) {
+      const existingUsername = await User.findOne({ username }).exec();
+
+      if (existingUsername) {
+        return res.status(409).json({
+          type: 'Conflict Error',
+          errorMsgs: 'This name is already taken',
+        });
+      }
+
+      existingUser.username = username;
+    }
+
+    // updates the password
+    if (passwordConfirmation || newPassword) {
+      // throw bad request if password fields are empty
+      if (!passwordConfirmation || !newPassword) {
+        return res.status(400).json({
+          type: 'Bad Request Error',
+          errorMsgs: {
+            passwordConfirmation: 'Please enter your current password',
+            newPassword: 'You did not enter a new password',
+          },
+        });
+      }
+
+      const isValidPassword = await bcrypt.compare(
+        passwordConfirmation,
+        existingUser.password
+      );
+
+      if (!isValidPassword) {
+        return res.status(400).json({
+          type: 'Bad Request Error',
+          errorMsgs: { passwordConfirmation: 'Invalid password' },
+        });
+      }
+
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+      existingUser.password = hashedPassword;
+    }
+
+    await existingUser.save();
+    res.sendStatus(200);
+  } catch (error) {
+    return next(createHttpError(500, 'Internal Server Error'));
   }
 }
 

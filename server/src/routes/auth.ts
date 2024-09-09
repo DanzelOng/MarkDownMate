@@ -213,6 +213,12 @@ router.patch(
   authController.verifyEmail
 );
 
+// update user credentials
+router.post(
+  '/update-credentials',
+  authController.updateCredentials
+);
+
 // logs the user out of session
 router.delete('/logout', authController.logout);
 
