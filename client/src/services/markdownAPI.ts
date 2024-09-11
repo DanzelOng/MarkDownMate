@@ -20,10 +20,13 @@ interface DocumentResponse {
   blob: Blob;
 }
 
+const serverURL = import.meta.env.VITE_SERVER_URL;
+
 // (GET) downloads a document
 export async function downloadDocument(id: string): Promise<DocumentResponse> {
-  const response = await fetch(`api/v1/markdown/download/${id}`, {
+  const response = await fetch(`${serverURL}/api/v1/markdown/download/${id}`, {
     method: 'GET',
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -49,8 +52,9 @@ interface NewDocumentDto {
 export async function createDocument(
   data: NewDocumentDto
 ): Promise<MarkdownModel> {
-  const response = await fetch('api/v1/markdown/create', {
+  const response = await fetch(`${serverURL}/api/v1/markdown/create`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -66,8 +70,9 @@ export async function createDocument(
 
 // (POST) uploads a document to the server
 export async function uploadFile(data: FormData): Promise<MarkdownModel> {
-  const response = await fetch('api/v1/markdown/upload', {
+  const response = await fetch(`${serverURL}/api/v1/markdown/upload`, {
     method: 'POST',
+    credentials: 'include',
     body: data,
   });
 
@@ -87,8 +92,9 @@ interface RenameDocumentDto {
 export async function renameDocument(
   data: RenameDocumentDto
 ): Promise<MarkdownModel> {
-  const response = await fetch('api/v1/markdown/rename', {
+  const response = await fetch(`${serverURL}/api/v1/markdown/rename`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -106,8 +112,9 @@ export async function renameDocument(
 export async function updateDocument(
   data: MarkdownModel
 ): Promise<MarkdownModel> {
-  const response = await fetch('api/v1/markdown/save', {
+  const response = await fetch(`${serverURL}/api/v1/markdown/save`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -123,8 +130,9 @@ export async function updateDocument(
 
 // (DELETE) deletes an existing document
 export async function deleteDocument(id: string) {
-  const response = await fetch(`api/v1/markdown/delete/${id}`, {
+  const response = await fetch(`${serverURL}/api/v1/markdown/delete/${id}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
 
   if (!response.ok) {

@@ -10,10 +10,13 @@ interface IEmail {
   email: string;
 }
 
+const serverURL = import.meta.env.VITE_SERVER_URL;
+
 // (GET) get authentication status of user
 export async function getAuthStatus(): Promise<AuthStatusResponse> {
-  const response = await fetch('/api/v1/auth/status', {
+  const response = await fetch(`${serverURL}/api/v1/auth/status`, {
     method: 'GET',
+    credentials: 'include',
     signal: AbortSignal.timeout(5000),
   });
 
@@ -23,9 +26,10 @@ export async function getAuthStatus(): Promise<AuthStatusResponse> {
 // (GET) get password reset token status
 export async function getTokenStatus(token: string | null, id: string | null) {
   const response = await fetch(
-    `api/v1/auth/token-status?token=${token}&id=${id}`,
+    `${serverURL}/api/v1/auth/token-status?token=${token}&id=${id}`,
     {
       method: 'GET',
+      credentials: 'include',
       signal: AbortSignal.timeout(8000),
     }
   );
@@ -37,14 +41,18 @@ export async function getTokenStatus(token: string | null, id: string | null) {
 
 // (POST) generates token for resetting password
 export async function generateResetToken(data: IEmail) {
-  const response = await fetch(`api/v1/auth/generate-reset-token`, {
-    method: 'POST',
-    signal: AbortSignal.timeout(8000),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
+  const response = await fetch(
+    `${serverURL}/api/v1/auth/generate-reset-token`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      signal: AbortSignal.timeout(8000),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }
+  );
 
   if (!response.ok) {
     await createHTTPError(response);
@@ -61,9 +69,10 @@ interface IResetPassword {
 // (PATCH) resets users password
 export async function resetPassword(data: IResetPassword) {
   const response = await fetch(
-    `api/v1/auth/reset-password?token=${data.token}&id=${data.id}`,
+    `${serverURL}/api/v1/auth/reset-password?token=${data.token}&id=${data.id}`,
     {
       method: 'PATCH',
+      credentials: 'include',
       signal: AbortSignal.timeout(8000),
       headers: {
         'Content-Type': 'application/json',
@@ -82,8 +91,9 @@ export async function resetPassword(data: IResetPassword) {
 
 // (POST) signs a user up
 export async function signup(data: SignupFormProps) {
-  const response = await fetch('/api/v1/auth/signup', {
+  const response = await fetch(`${serverURL}/api/v1/auth/signup`, {
     method: 'POST',
+    credentials: 'include',
     signal: AbortSignal.timeout(8000),
     headers: {
       'Content-Type': 'application/json',
@@ -98,8 +108,9 @@ export async function signup(data: SignupFormProps) {
 
 // (POST) logs an existing user in
 export async function login(data: LoginFormProps) {
-  const response = await fetch('/api/v1/auth/login', {
+  const response = await fetch(`${serverURL}/api/v1/auth/login`, {
     method: 'POST',
+    credentials: 'include',
     signal: AbortSignal.timeout(8000),
     headers: {
       'Content-Type': 'application/json',
@@ -114,8 +125,9 @@ export async function login(data: LoginFormProps) {
 
 // (POST) generates email OTP
 export async function generateEmailOTP(data: IEmail) {
-  const response = await fetch('api/v1/auth/verification-link', {
+  const response = await fetch(`${serverURL}/api/v1/auth/verification-link`, {
     method: 'POST',
+    credentials: 'include',
     signal: AbortSignal.timeout(8000),
     headers: {
       'Content-Type': 'application/json',
@@ -130,8 +142,9 @@ export async function generateEmailOTP(data: IEmail) {
 
 // (PATCH) verifies email address
 export async function verifyEmail(otp: string) {
-  const response = await fetch(`api/v1/auth/verify-email/${otp}`, {
+  const response = await fetch(`${serverURL}/api/v1/auth/verify-email/${otp}`, {
     method: 'PATCH',
+    credentials: 'include',
     signal: AbortSignal.timeout(8000),
   });
 
@@ -148,8 +161,9 @@ interface IUpdateCredentials {
 
 // (POST) updates user's credentials
 export async function updateCredentials(data: IUpdateCredentials) {
-  const response = await fetch('api/v1/auth/update-credentials', {
+  const response = await fetch(`${serverURL}/api/v1/auth/update-credentials`, {
     method: 'POST',
+    credentials: 'include',
     signal: AbortSignal.timeout(8000),
     headers: {
       'Content-Type': 'application/json',
@@ -164,8 +178,9 @@ export async function updateCredentials(data: IUpdateCredentials) {
 
 // (DELETE) logs out the user
 export async function logout() {
-  const response = await fetch('api/v1/auth/logout', {
+  const response = await fetch(`${serverURL}/api/v1/auth/logout`, {
     method: 'DELETE',
+    credentials: 'include',
   });
 
   if (!response.ok) {
