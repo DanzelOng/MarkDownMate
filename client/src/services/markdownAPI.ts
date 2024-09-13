@@ -1,10 +1,13 @@
 import createHTTPError from '../utils/httpErrors';
 import MarkdownModel from '../models/markdown';
 
+const serverURL = import.meta.env.VITE_SERVER_URL;
+
 // (GET) retrieve all documents
 export async function retrieveDocuments(): Promise<MarkdownModel[]> {
-  const response = await fetch('api/v1/markdown/retrieve', {
+  const response = await fetch(`${serverURL}/api/v1/markdown/retrieve`, {
     method: 'GET',
+    credentials: 'include',
     signal: AbortSignal.timeout(5000),
   });
 
@@ -19,8 +22,6 @@ interface DocumentResponse {
   fileName: string;
   blob: Blob;
 }
-
-const serverURL = import.meta.env.VITE_SERVER_URL;
 
 // (GET) downloads a document
 export async function downloadDocument(id: string): Promise<DocumentResponse> {
