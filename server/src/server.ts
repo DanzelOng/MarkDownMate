@@ -5,11 +5,21 @@ import passport from 'passport';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import morgan from 'morgan';
+import cors, { CorsOptions } from 'cors';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import createHttpError, { isHttpError } from 'http-errors';
 import requiresAuthMiddleware from './middlewares/requiresAuth';
 import authRouter from './routes/auth';
 import markdownRouter from './routes/markdown';
+
+// cors configuration
+const corsOptions: CorsOptions = {
+  origin: env.CLIENT_URL,
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+  exposedHeaders: ['Content-Disposition'],
+};
 
 const app = express();
 
@@ -18,6 +28,7 @@ if (env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+app.use(cors(corsOptions));
 app.use(
   session({
     secret: env.SECRET,
@@ -27,7 +38,7 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: 'strict',
-      maxAge: 60 * 60 * 1000,
+      maxAge: 60 * 60 * 1000,   // 1hr
       secure: env.NODE_ENV === 'production' ? true : false,
       domain: env.NODE_ENV === 'production' ? env.COOKIE_DOMAIN : undefined,
     },
