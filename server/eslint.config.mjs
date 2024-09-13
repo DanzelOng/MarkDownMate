@@ -21,5 +21,14 @@ export default [
       '@typescript-eslint/no-unused-vars': 'warn',
     },
   },
+  {
+    overrides: [
+      {
+        files: ['tests/**/*.ts'],
+        env: {
+          jest: true,
+        },
+      },
+    ],
+  },
 ];
-
