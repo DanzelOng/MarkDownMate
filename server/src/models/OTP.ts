@@ -3,8 +3,13 @@ import generateOTP from '../utils/generateOTP';
 
 const otpSchema = new Schema({
   email: { type: String, required: true, unique: true },
-  otp: { type: Number, length: 6, required: true, default: () => generateOTP() },
-  expiredAt: { type: Date, expires: '5m', default: Date.now },
+  otp: {
+    type: Number,
+    length: 6,
+    required: true,
+    default: () => generateOTP(),
+  },
+  expireAt: { type: Date, expires: '5m', default: Date.now },
 });
 
 const OTP = model('OTP', otpSchema);
