@@ -24,7 +24,7 @@ export default [
   {
     overrides: [
       {
-        files: ['tests/**/*.ts'],
+        files: ['**/__tests__/**/*.ts'],
         env: {
           jest: true,
         },
