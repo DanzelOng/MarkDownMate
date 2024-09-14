@@ -1,6 +1,14 @@
-import mongoose, { Schema, model } from 'mongoose';
+import mongoose, { Schema, model, Types } from 'mongoose';
 
-const userSchema = new Schema({
+export interface IUser {
+  userId: Types.ObjectId;
+  username: string;
+  email: string;
+  password: string;
+  expireAt: Date;
+}
+
+const userSchema = new Schema<IUser>({
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -10,7 +18,7 @@ const userSchema = new Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  expiredAt: { type: Date, expires: '60m', default: Date.now },
+  expireAt: { type: Date, expires: '60m', default: Date.now },
 });
 
 const UnverifiedUser = model('UnverifiedUser', userSchema);
