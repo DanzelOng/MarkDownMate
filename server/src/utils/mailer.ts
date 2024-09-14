@@ -1,6 +1,6 @@
 import env from '../utils/validateEnv';
 import { Types } from 'mongoose';
-import { IUser } from '../models/user';
+import { IUser } from '../models/unverifiedUsers';
 import nodemailer, { SendMailOptions } from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
