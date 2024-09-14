@@ -205,7 +205,7 @@ router.post(
 );
 
 // verifies email address
-router.patch(
+router.post(
   '/verify-email/:otp',
   rateLimiters.limitVerifyEmailMiddleware,
   checkSchema(otpSchema, ['params']),

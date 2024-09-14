@@ -1,3 +1,4 @@
+import env from '../utils/validateEnv';
 import {
   sendOTPVerificationMail,
   sendPasswordResetMail,
@@ -11,6 +12,7 @@ import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { IVerifyOptions } from 'passport-local';
 import { UserCredentialsDto } from '../dto/Dto';
+import UnverifiedUser from '../models/unverifiedUsers';
 import User from '../models/user';
 import OTP from '../models/OTP';
 import ResetToken from '../models/token';
@@ -130,11 +132,12 @@ export async function resetPassword(
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     existingUser.password = hashedPassword;
-    existingUser.isVerified = true;
-    await existingUser.save();
 
-    // delete existing token
-    await ResetToken.findOneAndDelete({ userId: id });
+    // update user password and delete existing token
+    await Promise.all([
+      existingUser.save(),
+      ResetToken.findOneAndDelete({ userId: id }).exec(),
+    ]);
 
     res.sendStatus(200);
   } catch (error) {
@@ -147,17 +150,30 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
   const { username, email, password } = matchedData(req);
 
   try {
-    const existingUser = await User.findOne({ username }).exec();
-    const existingEmail = await User.findOne({ email }).exec();
+    const [
+      existingUser,
+      existingUserByEmail,
+      existingUnverifiedUser,
+      existingUnverifiedUserByEmail,
+    ] = await Promise.all([
+      User.findOne({ username }).exec(),
+      User.findOne({ email }, 'email').exec(),
+      UnverifiedUser.findOne({ username }).exec(),
+      UnverifiedUser.findOne({ email }, 'email').exec(),
+    ]);
 
     const errorMsgs: { username?: string; email?: string } = {};
 
-    if (existingUser) {
+    if (existingUser || existingUnverifiedUser) {
       errorMsgs.username = 'Username is already taken';
     }
 
-    if (existingEmail) {
+    if (existingUserByEmail || existingUnverifiedUserByEmail) {
       errorMsgs.email = 'Email is already taken';
+    }
+
+    if (email === env.HOST_EMAIL) {
+      errorMsgs.email = 'Unauthorized email address';
     }
 
     if (Object.keys(errorMsgs).length) {
@@ -168,7 +184,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // create new user
-    const newUser = await User.create({
+    const newUnverifiedUser = await UnverifiedUser.create({
       username,
       email,
       password: hashedPassword,
@@ -176,15 +192,15 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
 
     // create OTP token
     const { otp } = await OTP.create({
-      email: newUser.email,
+      email: newUnverifiedUser.email,
     });
 
     // send OTP to user's email
-    await sendOTPVerificationMail(newUser, otp);
+    await sendOTPVerificationMail(newUnverifiedUser, otp);
 
     res.sendStatus(201);
   } catch (error) {
-    return next(createHttpError(500, 'Internal server error'));
+    return next(createHttpError(500, 'Internal Server Error'));
   }
 }
 
@@ -192,7 +208,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
 export function login(req: Request, res: Response, next: NextFunction) {
   const callbackFn: AuthenticateCallback = (err, user, info) => {
     if (err) {
-      return next(createHttpError(500, 'Internal server error'));
+      return next(createHttpError(500, 'Internal Server Error'));
     }
 
     if (!user) {
@@ -204,7 +220,7 @@ export function login(req: Request, res: Response, next: NextFunction) {
 
     req.login(user, (err) => {
       if (err) {
-        return next(createHttpError(500, 'Internal server error'));
+        return next(createHttpError(500, 'Internal Server Error'));
       }
       res.sendStatus(200);
     });
@@ -222,7 +238,7 @@ export async function generateEmailOTP(
   const { email } = matchedData(req);
 
   try {
-    const existingUser = await User.findOne(
+    const existingUser = await UnverifiedUser.findOne(
       { email },
       'username email isVerified'
     ).exec();
@@ -233,12 +249,6 @@ export async function generateEmailOTP(
         errorMsgs:
           'We were unable to find a user for this email address. Please sign up instead',
       });
-    }
-
-    if (existingUser.isVerified) {
-      return res
-        .status(200)
-        .json({ message: 'User is already verified. Please log in instead' });
     }
 
     const existingOTP = await OTP.findOne({ email }, 'otp').exec();
@@ -252,11 +262,11 @@ export async function generateEmailOTP(
 
     res.sendStatus(200);
   } catch (error) {
-    return next(createHttpError(500, 'Internal server error'));
+    return next(createHttpError(500, 'Internal Server Error'));
   }
 }
 
-// (PATCH) verifies email address
+// (POST) verifies email address
 export async function verifyEmail(
   req: Request,
   res: Response,
@@ -276,9 +286,9 @@ export async function verifyEmail(
 
     const { email } = existingOTP;
 
-    const user = await User.findOne(
+    const user = await UnverifiedUser.findOne(
       { email },
-      'userId username email isVerified'
+      'userId username email password'
     ).exec();
 
     if (!user) {
@@ -289,41 +299,36 @@ export async function verifyEmail(
       });
     }
 
-    if (user.isVerified) {
-      return res.status(200).json({
-        msg: 'User has already been verified. Please login instead',
-      });
-    }
+    // deleting temp user, existing OTP and add unverified user to perm user collection concurrently
+    const [, , newUser] = await Promise.all([
+      UnverifiedUser.findByIdAndDelete(user._id).exec(),
+      OTP.findByIdAndDelete(existingOTP._id).exec(),
+      User.create({
+        userId: user.userId,
+        username: user.username,
+        email: user.email,
+        password: user.password,
+        isVerified: true,
+      }),
+    ]);
 
-    user.isVerified = true;
-    await user.save();
-
-    // delete existing OTP
-    await OTP.findByIdAndDelete({ _id: existingOTP._id });
-
-    if (req.user) {
-      // user is already authenticated, return 200 response
-      return res.sendStatus(200);
-    } else {
-      // create user session upon successful verification for unverified users
-      // to allow frontend authentication
-      req.login(
-        {
-          userId: user.userId,
-          username: user.username,
-          email: user.email,
-          isVerified: user.isVerified,
-        },
-        (err) => {
-          if (err) {
-            return next(createHttpError(500, 'Internal server error'));
-          }
-          res.sendStatus(200);
+    // create user session upon successful verification for unverified users
+    req.login(
+      {
+        userId: newUser.userId,
+        username: newUser.username,
+        email: newUser.email,
+        isVerified: newUser.isVerified,
+      },
+      (err) => {
+        if (err) {
+          return next(createHttpError(500, 'Internal Server Error'));
         }
-      );
-    }
+        res.sendStatus(201);
+      }
+    );
   } catch (error) {
-    return next(createHttpError(500, 'Internal server error'));
+    return next(createHttpError(500, 'Internal Server Error'));
   }
 }
 

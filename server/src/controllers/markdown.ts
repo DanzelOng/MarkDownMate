@@ -152,7 +152,7 @@ export async function renameDocument(
       { userId, _id: id },
       { fileName: name },
       { new: true }
-    );
+    ).exec();
 
     // 404 resource not found error
     if (!document) {
@@ -182,7 +182,7 @@ export async function saveDocument(
       { _id: id },
       { content: fileContent },
       { new: true }
-    );
+    ).exec();
 
     // 404 resource not found error
     if (!document) {
@@ -209,7 +209,7 @@ export async function deleteDocument(
   const { id } = matchedData(req);
 
   try {
-    const document = await Markdown.findOneAndDelete({ userId, _id: id });
+    const document = await Markdown.findOneAndDelete({ userId, _id: id }).exec();
 
     if (!document) {
       return res.status(404).json({
@@ -220,6 +220,6 @@ export async function deleteDocument(
 
     res.sendStatus(200);
   } catch (error) {
-    return next(createHttpError(500, 'Internal server error'));
+    return next(createHttpError(500, 'Internal Server Error'));
   }
 }
