@@ -140,10 +140,10 @@ export async function generateEmailOTP(data: IEmail) {
   }
 }
 
-// (PATCH) verifies email address
+// (POST) verifies email address
 export async function verifyEmail(otp: string) {
   const response = await fetch(`${serverURL}/api/v1/auth/verify-email/${otp}`, {
-    method: 'PATCH',
+    method: 'POST',
     credentials: 'include',
     signal: AbortSignal.timeout(8000),
   });

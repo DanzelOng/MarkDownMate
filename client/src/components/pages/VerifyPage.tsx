@@ -13,7 +13,6 @@ import {
 import * as authAPI from '../../services/authAPI';
 
 interface VerifyPageProps {
-  type: 'register' | 'login' | 'update';
   email: string;
   setVerifyPage?: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -22,7 +21,7 @@ interface VerifyProps {
   otp: string;
 }
 
-const VerifyPage = ({ type, email, setVerifyPage }: VerifyPageProps) => {
+const VerifyPage = ({ email, setVerifyPage }: VerifyPageProps) => {
   const [remainingEmailTime, setRemainingEmailTime] = useState(60);
   const [remainingOtpTime, setRemainingOtpTime] = useState(60);
   const [isEmailRateLimited, setIsEmailRateLimited] = useState(false);
@@ -45,10 +44,9 @@ const VerifyPage = ({ type, email, setVerifyPage }: VerifyPageProps) => {
     try {
       await authAPI.verifyEmail(otp);
       toast.success(
-        type !== 'update'
-          ? `Account successfully verified! Redirecting to home page...`
-          : 'Email successfully updated!'
+        'Account successfully verified! Redirecting to home page...'
       );
+      // to be fixed
       setTimeout(() => {
         if (setVerifyPage) {
           return setVerifyPage(false);
@@ -139,7 +137,7 @@ const VerifyPage = ({ type, email, setVerifyPage }: VerifyPageProps) => {
       className='space-y-5 rounded-md bg-slate-100 p-8'
     >
       <h1 className='text-[1.2rem] font-medium text-slate-500'>
-        {`${type === 'login' ? 'Your account is not yet verified. ' : ''}Please enter the OTP sent to your ${type === 'update' ? 'new ' : ''}email`}
+        Please enter the OTP sent to your email
       </h1>
       <div className='space-y-5'>
         {errors?.otp?.message && <ErrorMsg msg={errors.otp.message} />}

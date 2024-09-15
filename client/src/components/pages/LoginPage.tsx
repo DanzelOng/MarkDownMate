@@ -10,17 +10,12 @@ import PasswordResetPage from './PasswordResetPage';
 import { BadRequestError, UnauthorizedError } from '../../utils/httpErrors';
 import * as authAPI from '../../services/authAPI';
 
-interface LoginPageProps {
-  setEmail: React.Dispatch<React.SetStateAction<string>>;
-  setVerifyPage: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 export interface LoginFormProps {
   username: string;
   password: string;
 }
 
-const LoginPage = ({ setEmail, setVerifyPage }: LoginPageProps) => {
+const LoginPage = () => {
   const [loginError, setLoginError] = useState<string>('');
   const [passwordResetPage, setPasswordResetPage] = useState(false);
   const {
@@ -50,12 +45,7 @@ const LoginPage = ({ setEmail, setVerifyPage }: LoginPageProps) => {
         error instanceof UnauthorizedError &&
         typeof error.errorMsgs === 'string'
       ) {
-        if (error.errorMsgs === 'Invalid credentials') {
-          setLoginError(error.errorMsgs);
-        } else {
-          setEmail(error.errorMsgs);
-          setVerifyPage(true);
-        }
+        setLoginError(error.errorMsgs);
       } else if (error instanceof BadRequestError) {
         // in the case where front end validation fails
         Object.entries(error.errorMsgs as object).forEach((err) =>

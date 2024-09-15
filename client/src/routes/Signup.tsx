@@ -58,7 +58,7 @@ const Signup = () => {
     <div className='grid min-h-full place-items-center bg-gradient-to-r from-slate-350 to-slate-400'>
       <div className='my-10 w-full max-w-[31.25rem] px-4'>
         {verifyPage && email ? (
-          <VerifyPage type='register' email={email} />
+          <VerifyPage email={email} />
         ) : (
           <SignupPage setEmail={setEmail} setVerifyPage={setVerifyPage} />
         )}

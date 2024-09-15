@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStatus from '../hooks/useAuthStatus';
 import Spinner from '../components/ui/Spinner';
 import LoginPage from '../components/pages/LoginPage';
-import VerifyPage from '../components/pages/VerifyPage';
 import UnauthenticatedPage from '../components/pages/UnauthenticatedPage';
 
 const Login = () => {
@@ -11,9 +10,6 @@ const Login = () => {
     authResponse: { status },
     getAuthStatus,
   } = useAuthStatus();
-
-  const [email, setEmail] = useState<string>('');
-  const [verifyPage, setVerifyPage] = useState(false);
 
   useEffect(() => {
     document.body.style.overflowY = 'auto';
@@ -57,11 +53,7 @@ const Login = () => {
   return status !== 'networkError' ? (
     <div className='grid min-h-full place-items-center bg-gradient-to-r from-slate-350 to-slate-400'>
       <div className='my-10 w-full max-w-[31.25rem] px-4 md:px-0'>
-        {verifyPage && email ? (
-          <VerifyPage type='login' email={email} />
-        ) : (
-          <LoginPage setEmail={setEmail} setVerifyPage={setVerifyPage} />
-        )}
+        <LoginPage />
       </div>
     </div>
   ) : (
