@@ -14,14 +14,13 @@ import * as authAPI from '../../services/authAPI';
 
 interface VerifyPageProps {
   email: string;
-  setVerifyPage?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface VerifyProps {
   otp: string;
 }
 
-const VerifyPage = ({ email, setVerifyPage }: VerifyPageProps) => {
+const VerifyPage = ({ email }: VerifyPageProps) => {
   const [remainingEmailTime, setRemainingEmailTime] = useState(60);
   const [remainingOtpTime, setRemainingOtpTime] = useState(60);
   const [isEmailRateLimited, setIsEmailRateLimited] = useState(false);
@@ -48,9 +47,6 @@ const VerifyPage = ({ email, setVerifyPage }: VerifyPageProps) => {
       );
       // to be fixed
       setTimeout(() => {
-        if (setVerifyPage) {
-          return setVerifyPage(false);
-        }
         navigate('/home');
       }, 1850);
     } catch (error) {
